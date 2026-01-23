@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Worm RNG: Neural App</title>
+    <title>Worm RNG: Rebirth Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
             --comun: #7f8c8d; --raro: #00d2ff; --epico: #a29bfe; 
             --legendario: #ffeaa7; --mitico: #ff7675; --secreto: #6c5ce7;
-            --neon: #00ffcc; --dark: #0a0a0b;
+            --neon: #00ffcc; --dark: #0a0a0b; --gold: #f1c40f;
         }
 
         body { 
@@ -19,127 +19,78 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* --- FONDO CYBERPUNK --- */
         .grid-bg {
             position: fixed; inset: 0; z-index: -1;
             background: linear-gradient(transparent 0%, rgba(0, 255, 204, 0.05) 50%, transparent 100%),
                         linear-gradient(90deg, transparent 0%, rgba(0, 255, 204, 0.05) 50%, transparent 100%);
             background-size: 40px 40px;
-            perspective: 1000px;
         }
 
-        /* --- PANTALLA DE INICIO MEJORADA --- */
         #start-screen {
             position: fixed; inset: 0; z-index: 9999; background: #000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 5px solid #111;
         }
-        .scanline {
-            width: 100%; height: 2px; background: rgba(0, 255, 204, 0.3);
-            position: absolute; animation: scan 3s linear infinite;
-        }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
 
-        .loading-bar {
-            width: 200px; height: 10px; border: 2px solid var(--neon);
-            margin-top: 20px; position: relative;
-        }
-        .loading-fill {
-            height: 100%; width: 0%; background: var(--neon);
-            animation: fill 2s forwards;
-        }
-        @keyframes fill { to { width: 100%; } }
-
-        /* --- CONTENEDORES --- */
         .game-container {
             width: 90%; max-width: 400px; padding: 15px;
             background: rgba(10, 10, 11, 0.9); border: 2px solid #222;
-            border-radius: 20px; box-shadow: 0 0 30px rgba(0,0,0,1);
-            margin-top: 10px; position: relative;
+            border-radius: 20px; margin-top: 10px; position: relative;
         }
 
         .stat-bar {
-            display: flex; justify-content: space-between; font-size: 0.5rem;
+            display: flex; flex-direction: column; gap: 5px; font-size: 0.45rem;
             background: #000; padding: 10px; border-radius: 10px; border: 1px solid #333;
             margin-bottom: 10px; color: var(--neon);
         }
 
-        /* --- RULETA OPTIMIZADA --- */
         .roulette-wrapper {
-            position: relative; width: 100%; height: 140px; background: #000;
-            border: 2px solid #333; overflow: hidden; margin: 10px 0;
-            border-radius: 10px;
+            position: relative; width: 100%; height: 130px; background: #000;
+            border: 2px solid #333; overflow: hidden; margin: 10px 0; border-radius: 10px;
         }
-        .marker {
-            position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; 
-            background: var(--neon); z-index: 10; transform: translateX(-50%);
-            box-shadow: 0 0 15px var(--neon);
-        }
-        #roulette-strip {
-            display: flex; position: absolute; left: 0; top: 0; height: 100%;
-            will-change: transform; /* Optimización de hardware */
-        }
-        .item {
-            min-width: 120px; height: 100%; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; font-size: 0.35rem;
-            border-right: 1px solid #111;
-        }
+        .marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: var(--neon); z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px var(--neon); }
+        #roulette-strip { display: flex; position: absolute; left: 0; top: 0; height: 100%; will-change: transform; }
+        .item { min-width: 120px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; }
 
-        /* --- BOTONES Y UPGRADES --- */
-        .btn-roll {
-            width: 100%; padding: 15px; background: var(--neon); color: #000;
-            font-family: 'Press Start 2P'; font-size: 0.9rem; border: none;
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
-            box-shadow: 0 5px 0 #00886a; margin-bottom: 10px;
-        }
-        .btn-roll:active { transform: translateY(3px); box-shadow: 0 2px 0 #00886a; }
-        .btn-roll:disabled { background: #333; box-shadow: none; color: #666; }
+        .btn-roll { width: 100%; padding: 15px; background: var(--neon); color: #000; font-family: 'Press Start 2P'; font-size: 0.8rem; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
+        .btn-roll:disabled { background: #333; color: #666; }
 
-        .upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .card {
-            background: #151517; border: 1px solid #333; padding: 10px;
-            border-radius: 10px; text-align: center; font-size: 0.35rem;
-        }
+        .upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .card { background: #151517; border: 1px solid #333; padding: 10px; border-radius: 10px; text-align: center; font-size: 0.35rem; cursor: pointer; }
 
-        /* --- DISENOS DE GUSANOS SVG --- */
-        .worm-svg { width: 80px; height: 40px; }
+        /* BOTON REBIRTH */
+        .btn-rebirth {
+            width: 100%; padding: 12px; background: #000; border: 2px solid var(--gold);
+            color: var(--gold); font-family: 'Press Start 2P'; font-size: 0.5rem;
+            border-radius: 10px; cursor: pointer; margin-top: 5px; transition: 0.3s;
+        }
+        .btn-rebirth:hover { background: var(--gold); color: #000; }
+        .btn-rebirth:disabled { border-color: #333; color: #333; cursor: not-allowed; }
+
+        .worm-svg { width: 60px; height: 30px; }
+        .base-slot { background: #000; border: 2px dashed #333; height: 60px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.3rem; flex: 1; }
         
-        .base-slot {
-            background: #000; border: 2px dashed #333; height: 70px;
-            border-radius: 10px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; font-size: 0.35rem; flex: 1;
-        }
-
-        #side-btn {
-            position: fixed; top: 20px; right: 20px; padding: 10px;
-            background: #000; border: 2px solid var(--neon); color: var(--neon);
-            border-radius: 10px; font-size: 0.8rem; z-index: 100;
-        }
-
-        #god-timer {
-            display: none; background: gold; color: #000; padding: 5px;
-            font-size: 0.4rem; text-align: center; border-radius: 5px; margin-bottom: 10px;
-        }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9000; display: none; flex-direction: column; padding: 20px; }
     </style>
 </head>
 <body>
 
     <div class="grid-bg"></div>
-    <div id="side-btn" onclick="toggleModal()">📁</div>
-
-    <div id="start-screen" onclick="startGame()">
-        <div class="scanline"></div>
-        <h1 style="color:var(--neon); font-size: 1.2rem; text-shadow: 0 0 10px var(--neon);">NEURAL LINK</h1>
-        <div class="loading-bar"><div class="loading-fill"></div></div>
-        <p style="font-size: 0.4rem; margin-top: 20px; color: #444;">TAP TO CONNECT</p>
+    <div id="start-screen" onclick="startGame()" style="cursor:pointer">
+        <h1 style="color:var(--neon); font-size: 1.2rem;">WORM RNG</h1>
+        <p style="font-size: 0.5rem; color: #555;">[ TAP TO START ]</p>
     </div>
 
     <div class="game-container">
-        <div id="god-timer">CRITICAL LUCK: <span id="time-left">120</span>s</div>
+        <div id="god-timer" style="display:none; color:gold; font-size:0.4rem; text-align:center; margin-bottom:5px;">GOD MODE ACTIVE</div>
         
         <div class="stat-bar">
-            <span>CREDITS: <span id="coins" style="color:white">100</span></span>
-            <span>DATA: <span id="mps">0</span>/s</span>
+            <div style="display:flex; justify-content:space-between">
+                <span>CREDITS: <span id="coins" style="color:white">100</span></span>
+                <span>DATA: <span id="mps">0</span>/s</span>
+            </div>
+            <div style="font-size: 0.35rem; color: var(--gold); border-top: 1px solid #222; pt: 5px;">
+                REBIRTHS: <span id="rebirth-count">0</span> (x<span id="rebirth-mult">1.0</span> Boost)
+            </div>
         </div>
 
         <div class="roulette-wrapper">
@@ -147,40 +98,44 @@
             <div id="roulette-strip"></div>
         </div>
 
-        <button class="btn-roll" id="roll-btn" onclick="startRoll()">EXECUTE ROLL (-10)</button>
+        <button class="btn-roll" id="roll-btn" onclick="startRoll()">ROLL (-10)</button>
 
         <div class="upgrade-grid">
             <div class="card" onclick="upgradeSpeed()">
-                SPEED<br><span id="speed-val">3.0</span>s
+                SPEED: <span id="speed-val">3.0</span>s
                 <div style="color:gold; margin-top:5px;" id="speed-cost">100</div>
             </div>
             <div class="card" onclick="upgradeLuck()">
-                LUCK<br>x<span id="luck-val">1.0</span>
+                LUCK: x<span id="luck-val">1.0</span>
                 <div style="color:gold; margin-top:5px;" id="luck-cost">1000</div>
             </div>
         </div>
 
-        <div style="display:flex; border:1px solid #333; background:#000; margin:10px 0; border-radius:5px;">
-            <input type="text" id="code-in" placeholder="ENTER_CODE" style="flex:1; background:none; border:none; color:var(--neon); padding:8px; font-family:'Press Start 2P'; font-size:0.4rem; outline:none;">
-            <button onclick="useCode()" style="background:var(--neon); border:none; padding:5px 10px; font-family:'Press Start 2P'; font-size:0.4rem;">OK</button>
-        </div>
+        <button class="btn-rebirth" id="rebirth-btn" onclick="performRebirth()">
+            NEURAL REBIRTH<br>
+            COST: <span id="rebirth-cost">30000</span>
+        </button>
 
-        <div style="display:flex; gap:5px;">
-            <div class="base-slot" id="slot-0" onclick="removeWorm(0)">[EMPTY]</div>
-            <div class="base-slot" id="slot-1" onclick="removeWorm(1)">[EMPTY]</div>
-            <div class="base-slot" id="slot-2" onclick="removeWorm(2)">[EMPTY]</div>
+        <div style="display:flex; gap:5px; margin-top:10px;">
+            <div class="base-slot" id="slot-0" onclick="removeWorm(0)">EMPTY</div>
+            <div class="base-slot" id="slot-1" onclick="removeWorm(1)">EMPTY</div>
+            <div class="base-slot" id="slot-2" onclick="removeWorm(2)">EMPTY</div>
+        </div>
+        
+        <div style="text-align:center; margin-top:10px;">
+            <span onclick="toggleModal()" style="font-size:0.4rem; color:var(--neon); cursor:pointer;">[ OPEN DATABASE ]</span>
         </div>
     </div>
 
-    <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9000; display:none; flex-direction:column; padding:20px;">
-        <div style="text-align:right; color:red; margin-bottom:20px;" onclick="toggleModal()">[TERMINATE]</div>
+    <div id="modal">
+        <div style="text-align:right; color:red; margin-bottom:20px;" onclick="toggleModal()">[CERRAR]</div>
         <div id="catalog-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; overflow-y:auto;"></div>
     </div>
 
 <script>
     const RAREZAS = {
-        COMUN: { color: "#7f8c8d", mult: 1, nombres: ["Tierra", "Lodo", "Raiz", "Pasto"] },
-        RARO: { color: "#00d2ff", mult: 4, nombres: ["Neon", "Fuego", "Acido", "Vapor"] },
+        COMUN: { color: "#7f8c8d", mult: 1, nombres: ["Tierra", "Lodo", "Pasto"] },
+        RARO: { color: "#00d2ff", mult: 4, nombres: ["Neon", "Fuego", "Acido"] },
         EPICO: { color: "#a29bfe", mult: 15, nombres: ["Aura", "Nebula", "Plasma"] },
         LEGENDARIO: { color: "#ffeaa7", mult: 60, nombres: ["Oro", "Solar", "Gema"] },
         MITICO: { color: "#ff7675", mult: 200, nombres: ["Vacio", "Caos"] },
@@ -194,87 +149,88 @@
         });
     });
 
+    // --- VARIABLES DE ESTADO ---
     let coins = 100, inventory = {}, discovered = {}, bases = [null, null, null];
     let rollSpeed = 3000, speedCost = 100, luckMult = 1, luckCost = 1000;
-    let audioCtx, godMode = false;
+    let rebirths = 0, rebirthCost = 30000;
+    let godMode = false;
 
-    // --- MOTOR VISUAL DE GUSANOS ---
-    function getWormSVG(worm) {
-        const c = worm.color;
-        let extra = "";
-        
-        if(worm.rareza === "RARO") extra = `<path d="M10,10 L15,0 L20,10" fill="${c}" />`;
-        if(worm.rareza === "EPICO") extra = `<circle cx="60" cy="20" r="10" fill="${c}" opacity="0.3" />`;
-        if(worm.rareza === "LEGENDARIO" || worm.rareza === "MITICO") {
-            extra = `<circle cx="40" cy="20" r="15" stroke="${c}" fill="none" stroke-width="2"><animate attributeName="r" values="10;20;10" dur="1s" repeatCount="indefinite" /></circle>`;
-        }
-
-        return `
-        <svg class="worm-svg" viewBox="0 0 80 40">
-            <filter id="glow${worm.id}"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <path d="M10,25 Q25,10 40,25 T70,25" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round" filter="url(#glow${worm.id})" />
-            ${extra}
-            <circle cx="70" cy="22" r="2" fill="white" />
-        </svg>`;
-    }
-
-    // --- PERSISTENCIA ---
     function save() {
-        const data = { coins, inventory, discovered, rollSpeed, speedCost, luckMult, luckCost, basesIds: bases.map(b => b?b.id:null) };
-        localStorage.setItem('worm_data_v3', JSON.stringify(data));
+        const data = { coins, inventory, discovered, rollSpeed, speedCost, luckMult, luckCost, rebirths, rebirthCost, basesIds: bases.map(b => b?b.id:null) };
+        localStorage.setItem('worm_data_rebirth', JSON.stringify(data));
     }
 
     function load() {
-        const saved = localStorage.getItem('worm_data_v3');
+        const saved = localStorage.getItem('worm_data_rebirth');
         if(saved) {
             const d = JSON.parse(saved);
             coins = d.coins; inventory = d.inventory; discovered = d.discovered;
             rollSpeed = d.rollSpeed; speedCost = d.speedCost; luckMult = d.luckMult; luckCost = d.luckCost;
+            rebirths = d.rebirths || 0; rebirthCost = d.rebirthCost || 30000;
             if(d.basesIds) bases = d.basesIds.map(id => id !== null ? TODOS.find(w => w.id === id) : null);
         }
         updateUI(); updateBasesUI();
     }
 
     function startGame() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         document.getElementById('start-screen').style.display = 'none';
         load();
     }
 
-    // --- RULETA OPTIMIZADA ---
+    // --- LÓGICA DE REBIRTH ---
+    function performRebirth() {
+        if(coins >= rebirthCost) {
+            if(confirm("¿Quieres renacer? Perderás tus monedas, inventario y mejoras, pero ganarás +0.2x de multiplicador permanente.")) {
+                rebirths++;
+                rebirthCost = Math.floor(rebirthCost * 2.5);
+                
+                // Reset de progreso
+                coins = 100;
+                inventory = {};
+                bases = [null, null, null];
+                rollSpeed = 3000;
+                speedCost = 100;
+                luckMult = 1;
+                luckCost = 1000;
+                
+                save();
+                updateUI();
+                updateBasesUI();
+                
+                // Efecto visual
+                document.body.style.filter = "invert(1)";
+                setTimeout(() => document.body.style.filter = "none", 500);
+            }
+        }
+    }
+
+    function getWormSVG(worm) {
+        const c = worm.color;
+        return `<svg class="worm-svg" viewBox="0 0 80 40">
+            <path d="M10,25 Q25,10 40,25 T70,25" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round" />
+            <circle cx="70" cy="22" r="2" fill="white" />
+        </svg>`;
+    }
+
     function startRoll() {
         if(coins < 10) return;
         coins -= 10; updateUI();
-        
         const btn = document.getElementById('roll-btn');
         const strip = document.getElementById('roulette-strip');
         btn.disabled = true;
-
-        const count = 30;
-        const winnerIdx = 25;
-        const itemWidth = 120;
-        
-        strip.style.transition = 'none';
-        strip.style.transform = 'translateX(0)';
-        
-        let html = "";
-        let pool = [];
+        const count = 30, winnerIdx = 25, itemWidth = 120;
+        strip.style.transition = 'none'; strip.style.transform = 'translateX(0)';
+        let html = ""; let pool = [];
         for(let i=0; i<count; i++) {
-            let w = getRNGWorm();
-            pool.push(w);
+            let w = getRNGWorm(); pool.push(w);
             html += `<div class="item">${getWormSVG(w)}<b style="color:${w.color}">${w.nombre}</b></div>`;
         }
         strip.innerHTML = html;
-
         setTimeout(() => {
             const offset = -(winnerIdx * itemWidth) + (strip.parentElement.offsetWidth / 2) - (itemWidth / 2);
             strip.style.transition = `transform ${rollSpeed}ms cubic-bezier(0.15, 0, 0.15, 1)`;
             strip.style.transform = `translateX(${offset}px)`;
-            
-            setTimeout(() => {
-                finalizarRoll(pool[winnerIdx]);
-                btn.disabled = false;
-            }, rollSpeed);
+            setTimeout(() => { finalizarRoll(pool[winnerIdx]); btn.disabled = false; }, rollSpeed);
         }, 50);
     }
 
@@ -302,19 +258,34 @@
     function upgradeSpeed() { if(coins >= speedCost) { coins -= speedCost; rollSpeed = Math.max(400, rollSpeed - 300); speedCost *= 2; save(); updateUI(); } }
     function upgradeLuck() { if(coins >= luckCost) { coins -= luckCost; luckMult += 0.5; luckCost *= 2; save(); updateUI(); } }
 
-    function useCode() {
-        const val = document.getElementById('code-in').value.toUpperCase();
-        if(val === "OPWORM99" && !godMode) {
-            coins += 100000; godMode = true;
-            let oldLuck = luckMult; luckMult = 99;
-            document.getElementById('god-timer').style.display = 'block';
-            let s = 120;
-            let t = setInterval(() => {
-                s--; document.getElementById('time-left').innerText = s;
-                if(s<=0){ clearInterval(t); luckMult = oldLuck; godMode = false; document.getElementById('god-timer').style.display='none'; }
-            }, 1000);
-        }
-        document.getElementById('code-in').value = ""; save(); updateUI();
+    function updateBasesUI() {
+        let total = 0;
+        let rMult = 1 + (rebirths * 0.2);
+        bases.forEach((w, i) => {
+            const s = document.getElementById(`slot-${i}`);
+            if(w) { 
+                let inc = (w.income * rMult).toFixed(1);
+                s.innerHTML = `${getWormSVG(w)}<span style="color:${w.color}; font-size:0.3rem;">+${inc}/s</span>`; 
+                total += w.income * rMult; 
+            }
+            else { s.innerHTML = "EMPTY"; }
+        });
+        document.getElementById('mps').innerText = total.toFixed(1);
+    }
+
+    function updateUI() {
+        let rMult = 1 + (rebirths * 0.2);
+        document.getElementById('coins').innerText = Math.floor(coins);
+        document.getElementById('speed-val').innerText = (rollSpeed/1000).toFixed(1);
+        document.getElementById('luck-val').innerText = luckMult.toFixed(1);
+        document.getElementById('speed-cost').innerText = Math.floor(speedCost);
+        document.getElementById('luck-cost').innerText = Math.floor(luckCost);
+        
+        document.getElementById('rebirth-count').innerText = rebirths;
+        document.getElementById('rebirth-mult').innerText = rMult.toFixed(1);
+        document.getElementById('rebirth-cost').innerText = rebirthCost;
+        
+        document.getElementById('rebirth-btn').disabled = (coins < rebirthCost);
     }
 
     function toggleModal() {
@@ -325,7 +296,7 @@
             TODOS.forEach(w => {
                 if(discovered[w.id]) {
                     const d = document.createElement('div');
-                    d.style.cssText = `border:1px solid ${w.color}; padding:5px; text-align:center; font-size:0.25rem; background:#111; border-radius:5px;`;
+                    d.style.cssText = `border:1px solid ${w.color}; padding:5px; text-align:center; font-size:0.25rem; background:#111;`;
                     d.innerHTML = `${getWormSVG(w)}<br>${w.nombre}<br>x${inventory[w.id]}`;
                     d.onclick = () => {
                         let empty = bases.findIndex(b => b === null);
@@ -339,30 +310,13 @@
 
     function removeWorm(idx) { if(bases[idx]) { inventory[bases[idx].id]++; bases[idx] = null; updateBasesUI(); save(); } }
 
-    function updateBasesUI() {
-        let total = 0;
-        bases.forEach((w, i) => {
-            const s = document.getElementById(`slot-${i}`);
-            if(w) { s.innerHTML = `${getWormSVG(w)}<span style="color:${w.color}; font-size:0.3rem;">+${w.income}/s</span>`; total += w.income; }
-            else { s.innerHTML = "[EMPTY]"; }
-        });
-        document.getElementById('mps').innerText = total;
-    }
-
-    function updateUI() {
-        document.getElementById('coins').innerText = Math.floor(coins);
-        document.getElementById('speed-val').innerText = (rollSpeed/1000).toFixed(1);
-        document.getElementById('luck-val').innerText = luckMult.toFixed(1);
-        document.getElementById('speed-cost').innerText = Math.floor(speedCost);
-        document.getElementById('luck-cost').innerText = Math.floor(luckCost);
-    }
-
     setInterval(() => {
-        let gain = 0; bases.forEach(w => { if(w) gain += w.income; });
+        let rMult = 1 + (rebirths * 0.2);
+        let gain = 0; 
+        bases.forEach(w => { if(w) gain += w.income * rMult; });
         if(gain > 0) { coins += gain; updateUI(); save(); }
     }, 1000);
 
-    updateUI();
 </script>
 </body>
 </html>
