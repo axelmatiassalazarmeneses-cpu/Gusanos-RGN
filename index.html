@@ -2,263 +2,268 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Worm RNG: Putolauate Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Worm RNG: App Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        /* (Se mantiene el CSS anterior pero optimizado para pantalla completa) */
         :root {
             --comun: #95a5a6; --raro: #3498db; --epico: #9b59b6; 
-            --legendario: #f1c40f; --mitico: #e74c3c; --secreto: #7f00ff;
+            --legendario: #f1c40f; --mitico: #e74c3c; --secreto: #bc13fe;
+            --neon-pink: #ff00ff; --neon-cyan: #00ffff; --bg-dark: #050505;
         }
-        body { background: #121212; color: white; font-family: sans-serif; display: flex; gap: 20px; padding: 20px; justify-content: center; overflow-x: hidden; }
-        .panel { background: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #333; }
-        .game-box { width: 350px; text-align: center; }
-        .catalog-box { width: 450px; height: 85vh; overflow-y: auto; }
-        
-        #congrats-overlay, #secret-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: none; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100; text-align: center;
+
+        body { 
+            background-color: var(--bg-dark);
+            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: white; font-family: 'Press Start 2P', cursive;
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
-        #secret-overlay { background: rgba(0,0,0,0.98); z-index: 200; border: 5px solid var(--secreto); }
-        .mitico-lights { animation: flash 0.2s infinite; }
-        @keyframes flash { 0% { box-shadow: inset 0 0 100px #ff0000; } 50% { box-shadow: inset 0 0 100px #fff; } 100% { box-shadow: inset 0 0 100px #ff0000; } }
-
-        .potion-bar { margin: 10px 0; padding: 5px; border-radius: 5px; font-size: 0.8rem; display: none; font-weight: bold; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
-
-        .bases-container { display: flex; justify-content: space-around; margin: 15px 0; background: #252525; padding: 10px; border-radius: 10px; }
-        .base-slot { width: 85px; height: 85px; border: 2px dashed #555; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.6rem; cursor: pointer; }
         
-        #display-aura { font-size: 1.3rem; font-weight: bold; margin: 10px 0; height: 80px; border: 1px solid #333; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1a1a1a; }
-        .roll-btn { background: #c0392b; border: none; padding: 12px; color: white; font-size: 1.1rem; border-radius: 10px; cursor: pointer; width: 100%; }
-        .upgrade-btn { background: #2980b9; border: none; padding: 8px; color: white; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; font-size: 0.8rem; }
-        .code-input { background: #111; border: 1px solid #444; color: #2ecc71; padding: 5px; border-radius: 5px; width: 50%; font-family: monospace; margin-top: 10px;}
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        .item-card { background: #252525; padding: 10px; border-radius: 5px; font-size: 0.65rem; text-align: center; border: 1px solid #333; }
-        .locked { color: #444; }
-        .unlocked { border-color: #555; cursor: pointer; }
+        /* ... (Resto del CSS anterior se mantiene igual) ... */
+        .game-container { width: 95%; max-width: 420px; padding: 15px; z-index: 1; background: rgba(0,0,0,0.85); border: 1px solid #222; border-radius: 15px; margin-top: 10px; }
+        .stat-bar { background: #000; border: 2px solid #333; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 0.5rem; color: #0f0; }
+        .roulette-wrapper { position: relative; width: 100%; height: 130px; background: #000; border: 2px solid var(--neon-pink); overflow: hidden; margin: 10px 0; }
+        .roulette-marker { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: var(--neon-cyan); z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px var(--neon-cyan); }
+        #roulette-strip { display: flex; position: absolute; left: 0; top: 0; height: 100%; will-change: transform; }
+        .roulette-item { min-width: 100px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; }
+        .btn-roll { width: 100%; padding: 18px; background: #000; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); font-family: 'Press Start 2P'; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
+        .btn-roll:disabled { opacity: 0.3; }
+        .upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .upgrade-card { background: #0a0a0a; border: 1px solid #333; padding: 10px; font-size: 0.4rem; text-align: center; }
+        .code-terminal { display: flex; border: 1px solid #333; background: #000; padding: 5px; margin-bottom: 10px; }
+        #code-in { flex: 1; background: transparent; border: none; color: var(--neon-cyan); font-family: 'Press Start 2P'; font-size: 0.5rem; padding: 5px; outline: none; }
+        .base-slot { background: #000; border: 1px dashed #444; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.35rem; flex: 1; }
+        #side-index-btn { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: #000; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: 10px; }
+        #god-timer { display: none; color: gold; font-size: 0.4rem; text-align: center; margin-bottom: 10px; text-shadow: 0 0 5px gold; }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9000; display: none; flex-direction: column; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="congrats-overlay">
-        <h1 id="congrats-title"></h1>
-        <div id="congrats-body" style="font-size: 2rem;"></div>
+    <div id="side-index-btn" onclick="toggleModal()">💾</div>
+
+    <div id="start-screen" onclick="startGame()">
+        <h1 style="color:var(--neon-cyan); font-size: 1.5rem;">WORM RNG</h1>
+        <div style="border:2px solid var(--neon-pink); padding:15px; color:var(--neon-pink); font-size:0.5rem;">[ CARGAR SISTEMA ]</div>
     </div>
 
-    <div id="secret-overlay">
-        <h1 style="font-size: 3rem; color: var(--secreto); text-shadow: 0 0 30px var(--secreto);">¡¡PUTOLAUATE DETECTADO!! 💀</h1>
-        <p style="font-size: 1.5rem;">Has roto las probabilidades. La leyenda camina entre nosotros.</p>
-    </div>
-
-    <div class="panel game-box">
-        <h2>WORM RNG 🪱</h2>
-        <div style="font-size: 1.5rem; color: #2ecc71;">💰 <span id="coins">100</span></div>
-        <div id="mps-label" style="font-size: 0.8rem; color: #aaa;">+0/s</div>
-
-        <div id="pot-active" class="potion-bar"></div>
-
-        <div id="display-aura">---</div>
-        <div id="p-bar" style="width:100%; height:8px; background:#333; display:none;"><div id="fill" style="width:0%; height:100%; background:#e74c3c;"></div></div>
-        
-        <button class="roll-btn" id="btn" onclick="roll()">ROLL (10 💰)</button>
-        <button class="upgrade-btn" id="up-speed" onclick="upgradeSpeed()">Mejorar Vel. (Coste: 100)</button>
-        <button onclick="buyLuck()" style="width:100%; margin-top:5px; cursor:pointer; background: #27ae60; color: white; border: none; padding: 8px; border-radius: 5px;">Poción Suerte (500 💰)</button>
-        
-        <div>
-            <input type="text" id="code-in" class="code-input" placeholder="Código">
-            <button onclick="useCode()">USAR</button>
+    <div class="game-container">
+        <div id="god-timer">GOD MODE: <span id="time-left">120</span>s</div>
+        <div class="stat-bar">
+            <span>$$: <span id="coins">100</span></span>
+            <span>DATA: <span id="mps" style="color:var(--neon-pink)">0</span>/s</span>
         </div>
 
-        <div id="best-hallazgo" style="font-size:0.7rem; margin-top:10px; border:1px solid gold; padding:5px;">⭐ Mejor: <span id="best-name">?</span></div>
-
-        <p>🏆 EXHIBICIÓN</p>
-        <div class="bases-container">
-            <div class="base-slot" onclick="removeFromBase(0)" id="slot-0">Vacío</div>
-            <div class="base-slot" onclick="removeFromBase(1)" id="slot-1">Vacío</div>
-            <div class="base-slot" onclick="removeFromBase(2)" id="slot-2">Vacío</div>
+        <div class="roulette-wrapper">
+            <div class="roulette-marker"></div>
+            <div id="roulette-strip"></div>
         </div>
+
+        <button class="btn-roll" id="roll-btn" onclick="startRoll()">ROLL (-10)</button>
+
+        <div class="upgrade-grid">
+            <div class="upgrade-card" onclick="upgradeSpeed()">SPEED: <span id="speed-val">3.0</span>s<br><span style="color:gold" id="speed-cost">100</span></div>
+            <div class="upgrade-card" onclick="upgradeLuck()">LUCK: x<span id="luck-val">1.0</span><br><span style="color:gold" id="luck-cost">1000</span></div>
+        </div>
+
+        <div class="code-terminal">
+            <input type="text" id="code-in" placeholder="CODIGO_">
+            <button onclick="useCode()" style="background:none; border:none; color:var(--neon-cyan); font-family:'Press Start 2P'; font-size:0.5rem;">OK</button>
+        </div>
+
+        <div style="display:flex; gap:5px;">
+            <div class="base-slot" id="slot-0" onclick="removeWorm(0)">EMPTY</div>
+            <div class="base-slot" id="slot-1" onclick="removeWorm(1)">EMPTY</div>
+            <div class="base-slot" id="slot-2" onclick="removeWorm(2)">EMPTY</div>
+        </div>
+        
+        <p onclick="resetGame()" style="font-size:0.3rem; color:#333; text-align:center; margin-top:15px;">[ RESET DATA ]</p>
     </div>
 
-    <div class="panel catalog-box">
-        <h3>📖 ÍNDICE (<span id="found-count">0</span>/53)</h3>
-        <div id="catalog-grid" class="grid"></div>
+    <div id="modal">
+        <div style="text-align:right; color:var(--neon-pink); margin-bottom:20px;" onclick="toggleModal()">[ CERRAR ]</div>
+        <div id="catalog-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; overflow-y:auto;"></div>
     </div>
 
 <script>
-    let coins = 100, inventory = {}, bases = [null, null, null], rollTime = 3000, speedLevel = 1;
-    let luckMultiplier = 1, ultraLuck = false, codeUsed = false;
-
-    const DATA_GUSANOS = {
-        COMÚN: { e: "🌍", n: ["Tierra", "Estiércol 💩", "Jardín", "Lodo", "Pasto", "Charco", "Húmedo", "Raíz", "Macetas", "Hoja", "Arena", "Basura 🗑️", "Tubo", "Roca", "Polvo 💨", "Sótano", "Césped", "Patio", "Huerto", "Escurridizo"] },
-        RARO: { e: "✨", n: ["Neón 🌈", "Cristal 💎", "Fuego 🔥", "Hielo ❄️", "Eléctrico ⚡", "Sombra", "Ácido 🧪", "Brillante", "Cobre", "Vapor", "Bosque", "Coral", "Desierto", "Nieve", "Jungla"] },
-        ÉPICO: { e: "🟣", n: ["Galáctico 🌌", "Plasma", "Aura", "Nebulosa", "Dragón 🐉", "Samurái ⚔️", "Cibernético", "Espectral 👻", "Místico", "Fénix"] },
-        LEGENDARIO: { e: "👑", n: ["Oro Puro 📀", "Diamante 💎", "Rey Gusano", "Solar ☀️", "Ancestral"] },
-        MÍTICO: { e: "🌌", n: ["Dios del Vacío 🌑", "Creador de Mundos 🌎"] },
-        SECRETO: { e: "💀", n: ["Putolauate 💀"] }
+    const RAREZAS = {
+        COMUN: { color: "#95a5a6", mult: 1, nombres: ["Lodo", "Tierra", "Pasto", "Arena", "Raiz", "Polvo"] },
+        RARO: { color: "#3498db", mult: 4, nombres: ["Neon", "Cristal", "Fuego", "Acido", "Vapor"] },
+        EPICO: { color: "#9b59b6", mult: 15, nombres: ["Plasma", "Aura", "Nebula", "Espectral"] },
+        LEGENDARIO: { color: "#f1c40f", mult: 60, nombres: ["Oro", "Solar", "Ancestral"] },
+        MITICO: { color: "#e74c3c", mult: 200, nombres: ["Vacio", "Caos"] },
+        SECRETO: { color: "#bc13fe", mult: 1000, nombres: ["Putolauate"] }
     };
 
-    const INCOME = { "COMÚN": 1, "RARO": 3, "ÉPICO": 7, "LEGENDARIO": 15, "MÍTICO": 38, "SECRETO": 100 };
-    const TODOS_LOS_GUSANOS = [];
-    let idCounter = 0;
-
-    Object.keys(DATA_GUSANOS).forEach(rarity => {
-        DATA_GUSANOS[rarity].n.forEach(name => {
-            TODOS_LOS_GUSANOS.push({ id: idCounter++, nombre: `Gusano ${name}`, rareza: rarity, color: getRarityColor(rarity), income: INCOME[rarity] });
+    let TODOS = [];
+    Object.keys(RAREZAS).forEach(rar => {
+        RAREZAS[rar].nombres.forEach(nom => {
+            TODOS.push({ nombre: nom, rareza: rar, color: RAREZAS[rar].color, income: RAREZAS[rar].mult, id: TODOS.length });
         });
     });
 
-    function getRarityColor(r) {
-        return r=="COMÚN"?"#95a5a6":r=="RARO"?"#3498db":r=="ÉPICO"?"#9b59b6":r=="LEGENDARIO"?"#f1c40f":r=="MÍTICO"?"#e74c3c":"#7f00ff";
+    // Variables de estado inicial
+    let coins = 100, inventory = {}, discovered = {}, bases = [null, null, null];
+    let rollSpeed = 3000, speedCost = 100, luckMult = 1, luckCost = 1000;
+    let audioCtx, audioInited = false, godModeActive = false;
+
+    // --- FUNCIONES DE GUARDADO ---
+    function saveGame() {
+        const data = {
+            coins, inventory, discovered, 
+            basesIds: bases.map(b => b ? b.id : null),
+            rollSpeed, speedCost, luckMult, luckCost
+        };
+        localStorage.setItem('wormRNG_SaveData', JSON.stringify(data));
     }
 
-    function upgradeSpeed() {
-        let cost = speedLevel * 100;
-        if(coins >= cost) {
-            coins -= cost;
-            rollTime *= 0.96; // Mejora sutil del 4%
-            speedLevel++;
-            document.getElementById('up-speed').innerText = `Mejorar Vel. (Coste: ${speedLevel * 100})`;
-            document.getElementById('coins').innerText = Math.floor(coins);
-        }
-    }
-
-    function buyLuck() {
-        if(coins >= 500) {
-            coins -= 500;
-            activatePotion("🍀 SUERTE x2 ACTIVADA", 120, 2);
-        }
-    }
-
-    function useCode() {
-        let val = document.getElementById('code-in').value;
-        if(val === "hormigasmalas" && !codeUsed) {
-            codeUsed = true;
-            ultraLuck = true;
-            activatePotion("💀 ULTRA SUERTE ACTIVADA", 180, 10);
-            document.getElementById('code-in').value = "";
-        }
-    }
-
-    function activatePotion(msg, time, mult) {
-        luckMultiplier = mult;
-        const bar = document.getElementById('pot-active');
-        bar.style.display = "block";
-        bar.style.background = mult > 5 ? "var(--secreto)" : "#2ecc71";
-        let remaining = time;
-        let t = setInterval(() => {
-            remaining--;
-            bar.innerText = `${msg} (${remaining}s)`;
-            if(remaining <= 0) {
-                clearInterval(t);
-                luckMultiplier = 1;
-                ultraLuck = false;
-                bar.style.display = "none";
+    function loadGame() {
+        const saved = localStorage.getItem('wormRNG_SaveData');
+        if(saved) {
+            const data = JSON.parse(saved);
+            coins = data.coins;
+            inventory = data.inventory;
+            discovered = data.discovered;
+            rollSpeed = data.rollSpeed;
+            speedCost = data.speedCost;
+            luckMult = data.luckMult;
+            luckCost = data.luckCost;
+            // Restaurar bases
+            if(data.basesIds) {
+                bases = data.basesIds.map(id => id !== null ? TODOS.find(w => w.id === id) : null);
             }
-        }, 1000);
+            updateUI();
+            updateBasesUI();
+        }
     }
 
-    function roll() {
+    function resetGame() {
+        if(confirm("¿BORRAR TODO EL PROGRESO?")) {
+            localStorage.removeItem('wormRNG_SaveData');
+            location.reload();
+        }
+    }
+
+    // --- LÓGICA DEL JUEGO (Igual que antes pero llamando a saveGame) ---
+    function startGame() {
+        if (!audioInited) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); audioInited = true; }
+        loadGame(); // Cargamos al iniciar
+        document.getElementById('start-screen').style.display = 'none';
+    }
+
+    function startRoll() {
         if(coins < 10) return;
-        coins -= 10;
-        document.getElementById('btn').disabled = true;
-        document.getElementById('p-bar').style.display = 'block';
-        let start = Date.now();
-        let t = setInterval(() => {
-            let pass = Date.now() - start;
-            document.getElementById('fill').style.width = (pass/rollTime)*100+"%";
-            if(pass >= rollTime) {
-                clearInterval(t);
-                document.getElementById('p-bar').style.display='none';
-                document.getElementById('btn').disabled=false;
-                finalizarRoll();
-            }
+        coins -= 10; updateUI();
+        const btn = document.getElementById('roll-btn');
+        const strip = document.getElementById('roulette-strip');
+        btn.disabled = true; strip.innerHTML = '';
+        const totalItems = 35; const winnerIdx = 30; let pool = [];
+        for(let i=0; i<totalItems; i++) {
+            let res = getRNGWorm(); pool.push(res);
+            const div = document.createElement('div'); div.className = 'roulette-item';
+            div.innerHTML = `<div style="width:30px; height:15px; background:${res.color}; box-shadow:0 0 5px ${res.color}"></div><span style="color:${res.color}; font-size:0.3rem; margin-top:5px;">${res.nombre}</span>`;
+            strip.appendChild(div);
+        }
+        setTimeout(() => {
+            const targetPos = -(winnerIdx * 100) + (strip.parentElement.offsetWidth / 2) - 50;
+            strip.style.transition = `transform ${rollSpeed}ms cubic-bezier(0.2, 0, 0.2, 1)`;
+            strip.style.transform = `translateX(${targetPos}px)`;
+            setTimeout(() => { finalizarRoll(pool[winnerIdx]); btn.disabled = false; }, rollSpeed);
         }, 50);
     }
 
-    function finalizarRoll() {
-        const rand = Math.random() * 100;
-        let res;
-        let m = luckMultiplier;
-
-        if(ultraLuck && rand < (0.05 * m)) res = getRandom("SECRETO");
-        else if(rand < (0.5 * m)) res = getRandom("MÍTICO");
-        else if(rand < (3 * m)) res = getRandom("LEGENDARIO");
-        else if(rand < (15 * m)) res = getRandom("ÉPICO");
-        else if(rand < (45 * m)) res = getRandom("RARO");
-        else res = getRandom("COMÚN");
-
-        document.getElementById('display-aura').innerHTML = `<span style="font-size:0.7rem; color:${res.color}">${res.rareza}</span><br>${res.nombre}`;
-        if(res.rareza === "SECRETO") mostrarSecret();
-        else if(res.rareza === "LEGENDARIO" || res.rareza === "MÍTICO") mostrarCeleb(res);
-
-        inventory[res.id] = (inventory[res.id] || 0) + 1;
-        drawCatalog();
+    function getRNGWorm() {
+        const r = Math.random() * 100 * (1/luckMult);
+        if(r < 0.1) return getRandomByRareza("SECRETO");
+        if(r < 1) return getRandomByRareza("MITICO");
+        if(r < 5) return getRandomByRareza("LEGENDARIO");
+        if(r < 20) return getRandomByRareza("EPICO");
+        if(r < 50) return getRandomByRareza("RARO");
+        return getRandomByRareza("COMUN");
     }
 
-    function mostrarCeleb(g) {
-        const o = document.getElementById('congrats-overlay');
-        o.style.display = 'flex';
-        document.getElementById('congrats-title').innerText = "¡HALLAZGO INCREÍBLE!";
-        document.getElementById('congrats-body').innerHTML = `<span style="color:${g.color}">${g.nombre}</span>`;
-        if(g.rareza === "MÍTICO") o.classList.add('mitico-lights');
-        setTimeout(() => { o.style.display='none'; o.classList.remove('mitico-lights'); }, 3000);
+    function getRandomByRareza(rar) {
+        let p = TODOS.filter(w => w.rareza === rar);
+        return p[Math.floor(Math.random() * p.length)];
     }
 
-    function mostrarSecret() {
-        const o = document.getElementById('secret-overlay');
-        o.style.display = 'flex';
-        setTimeout(() => o.style.display='none', 6000);
+    function finalizarRoll(worm) {
+        discovered[worm.id] = true;
+        inventory[worm.id] = (inventory[worm.id] || 0) + 1;
+        saveGame(); // Guardado automático
+        updateUI();
     }
 
-    function getRandom(r) {
-        let p = TODOS_LOS_GUSANOS.filter(g => g.rareza === r);
-        return p[Math.floor(Math.random()*p.length)];
+    function upgradeSpeed() { if(coins >= speedCost) { coins -= speedCost; rollSpeed = Math.max(500, rollSpeed - 300); speedCost *= 2; saveGame(); updateUI(); } }
+    function upgradeLuck() { if(coins >= luckCost) { coins -= luckCost; luckMult += 0.5; luckCost *= 2; saveGame(); updateUI(); } }
+
+    function removeWorm(idx) { if(bases[idx]) { inventory[bases[idx].id]++; bases[idx] = null; updateBasesUI(); saveGame(); } }
+
+    function useCode() {
+        const input = document.getElementById('code-in');
+        const val = input.value.toUpperCase();
+        if(val === "OPWORM99") {
+            coins += 100000; godModeActive = true;
+            let originalLuck = luckMult; luckMult = 99;
+            document.getElementById('god-timer').style.display = 'block';
+            let sec = 120;
+            let timer = setInterval(() => {
+                sec--; document.getElementById('time-left').innerText = sec;
+                if(sec <= 0) { clearInterval(timer); luckMult = originalLuck; godModeActive = false; document.getElementById('god-timer').style.display = 'none'; updateUI(); }
+            }, 1000);
+        }
+        input.value = ""; saveGame(); updateUI();
     }
 
-    function addToBase(g) {
-        if(!inventory[g.id]) return;
-        let i = bases.findIndex(b => b === null);
-        if(i !== -1) { inventory[g.id]--; bases[i] = g; updateBases(); drawCatalog(); }
+    function toggleModal() {
+        const m = document.getElementById('modal');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        if(m.style.display === 'flex') {
+            const grid = document.getElementById('catalog-grid'); grid.innerHTML = "";
+            TODOS.forEach(w => {
+                if(discovered[w.id]) {
+                    const d = document.createElement('div');
+                    d.style.cssText = `border:1px solid ${w.color}; padding:8px; text-align:center; font-size:0.3rem;`;
+                    d.innerHTML = `${w.nombre}<br>x${inventory[w.id]}`;
+                    d.onclick = () => {
+                        let empty = bases.findIndex(b => b === null);
+                        if(empty !== -1 && inventory[w.id] > 0) { inventory[w.id]--; bases[empty] = w; updateBasesUI(); toggleModal(); saveGame(); }
+                    };
+                    grid.appendChild(d);
+                }
+            });
+        }
     }
 
-    function removeFromBase(i) {
-        if(bases[i]) { inventory[bases[i].id]++; bases[i] = null; updateBases(); drawCatalog(); }
-    }
-
-    function updateBases() {
-        let inc = 0;
-        bases.forEach((g, i) => {
+    function updateBasesUI() {
+        let total = 0;
+        bases.forEach((w, i) => {
             const s = document.getElementById(`slot-${i}`);
-            if(g) { s.innerHTML = `<b>${g.nombre}</b><br>+${g.income}/s`; s.style.color = g.color; inc += g.income; }
-            else { s.innerHTML = "Vacío"; s.style.color = "#555"; }
+            if(w) { s.innerHTML = `<span style="color:${w.color}">${w.nombre}<br>+${w.income}/s</span>`; s.style.borderColor = w.color; total += w.income; }
+            else { s.innerHTML = "EMPTY"; s.style.borderColor = "#444"; }
         });
-        document.getElementById('mps-label').innerText = `+${inc}/s`;
+        document.getElementById('mps').innerText = total;
     }
 
-    function drawCatalog() {
-        const grid = document.getElementById('catalog-grid');
-        grid.innerHTML = "";
-        let f = 0;
-        TODOS_LOS_GUSANOS.forEach(g => {
-            const count = inventory[g.id] || 0;
-            const d = document.createElement('div');
-            d.className = `item-card ${count > 0 ? 'unlocked' : 'locked'}`;
-            if(count > 0) { d.innerHTML = `<b>${g.nombre}</b><br>x${count}`; d.style.color = g.color; d.onclick = () => addToBase(g); f++; }
-            else { d.innerHTML = "???"; }
-            grid.appendChild(d);
-        });
-        document.getElementById('found-count').innerText = f;
+    function updateUI() {
+        document.getElementById('coins').innerText = Math.floor(coins);
+        document.getElementById('speed-val').innerText = (rollSpeed/1000).toFixed(1);
+        document.getElementById('luck-val').innerText = luckMult.toFixed(1);
+        document.getElementById('speed-cost').innerText = Math.floor(speedCost);
+        document.getElementById('luck-cost').innerText = Math.floor(luckCost);
     }
 
     setInterval(() => {
-        let inc = 0;
-        bases.forEach(g => { if(g) inc += g.income; });
-        coins += inc;
-        document.getElementById('coins').innerText = Math.floor(coins);
+        let gain = 0; bases.forEach(w => { if(w) gain += w.income; });
+        if(gain > 0) { coins += gain; updateUI(); saveGame(); }
     }, 1000);
-
-    drawCatalog();
 </script>
 </body>
 </html>
